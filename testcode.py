@@ -31,20 +31,14 @@ class MapWidget(BoxLayout):
             start = "116.481028,39.989643"
             end = "116.434446,39.90816"
             url = f"https://restapi.amap.com/v3/direction/walking?key=1b1779b2176bc8d85a93f9aef22b8a53&origin=116.481028,39.989643&destination=116.434446,39.90816"
-            response = requests.get(url)
-            data = response.json()
+            data = requests.get(url).json()
 
             # 解析路径数据
             paths = data["route"]["paths"]
             polyline = paths[0]['steps']  # list
-            i = 0
-            try:
-                while True:
-                    print(type(polyline[i]['polyline'].split(';')))
-                    points.extend(polyline[i]['polyline'].split(';'))
-                    i = i + 1
-            except Exception as e:
-                print(e)
+            for i in range(0, len(polyline)):
+                print(type(polyline[i]['polyline'].split(';')))
+                points.extend(polyline[i]['polyline'].split(';'))
             show_route.gps_lon_lat.clear()
             for i in range(0, len(points)):
                 x, y = map(float, points[i].split(","))

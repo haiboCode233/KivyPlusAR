@@ -10,6 +10,9 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.label import Label
 from kivy.core.window import Window
 from kivy.uix.textinput import TextInput
+import GPSAPI
+import show_route
+NAVI_GaoDe = GPSAPI.Navi_auto()
 
 Window.size = (360, 640)
 
@@ -39,6 +42,7 @@ class MainScreen(BoxLayout):
         self.device_button.bind(on_press=self.go_to_second_screen)
         self.reset_button = Button(text='Reset', font_size=32, size_hint_x=None, width=120,
                                    size_hint_y=None, height=60)
+        self.reset_button.bind(on_press=self.reset_navi)
 
         # widgets for toolbar_layout
         self.input_dest = TextInput(multiline=False, hint_text="Enter your destination", size_hint_x=None, width=240,
@@ -62,11 +66,19 @@ class MainScreen(BoxLayout):
     def go_to_second_screen(self, instance):
         myapp.screen_manager.current = 'second_screen'
 
+    def reset_navi(self, *args):
+        self.ax.clear()
+        self.ax.axis('off')
+        self.ax.text(0.5, 0.5, 'Go and Explore!', ha='center', va='center')
+        self.fig.canvas.draw()
+
     def change_pic(self, *args):
         self.ax.clear()
         self.ax.axis('off')
-        x = [1, 2, 3]
-        y = [4, 5, 6]
+        NAVI_GaoDe.get_url()
+        NAVI_GaoDe.make_navi_data()
+        x = show_route.all_x
+        y = show_route.all_y
         self.ax.plot(x, y)
         self.fig.canvas.draw()
 
