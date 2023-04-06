@@ -44,7 +44,7 @@ class MainScreen(BoxLayout):
         self.input_dest = TextInput(multiline=False, hint_text="Enter your destination", size_hint_x=None, width=240,
                                     size_hint_y=None, height=60)
         self.go = Button(text='GO!', font_size=32, size_hint_x=None, width=120, size_hint_y=None, height=60)
-        self.go.bind(on_press=self.change_line_color)
+        self.go.bind(on_press=self.change_pic)
 
         # layouts
         swpage_layout.add_widget(self.device_button)
@@ -62,10 +62,12 @@ class MainScreen(BoxLayout):
     def go_to_second_screen(self, instance):
         myapp.screen_manager.current = 'second_screen'
 
-    def change_line_color(self, *args):
-        # Change the line color to a random color
-        color = np.random.rand(3)
-        self.ax.lines[0].set_color(color)
+    def change_pic(self, *args):
+        self.ax.clear()
+        self.ax.axis('off')
+        x = [1, 2, 3]
+        y = [4, 5, 6]
+        self.ax.plot(x, y)
         self.fig.canvas.draw()
 
 
