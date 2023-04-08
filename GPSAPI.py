@@ -27,7 +27,6 @@ class Navi_auto:
         paths = data["route"]["paths"]
         polyline = paths[0]['steps']  # list
         for i in range(0, len(polyline)):
-            print(type(polyline[i]['polyline'].split(';')))
             points.extend(polyline[i]['polyline'].split(';'))
         show_route.gps_lon_lat.clear()
         for i in range(0, len(points)):

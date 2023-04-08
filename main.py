@@ -10,11 +10,13 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.label import Label
 from kivy.core.window import Window
 from kivy.uix.textinput import TextInput
+from kivy.core.text import LabelBase
 import GPSAPI
 import show_route
 NAVI_GaoDe = GPSAPI.Navi_auto()
 
 Window.size = (360, 640)
+LabelBase.register(name='ArialUni', fn_regular='SimSun.ttf')
 
 
 class MainScreen(BoxLayout):
@@ -47,6 +49,9 @@ class MainScreen(BoxLayout):
         # widgets for toolbar_layout
         self.input_dest = TextInput(multiline=False, hint_text="Enter your destination", size_hint_x=None, width=240,
                                     size_hint_y=None, height=60)
+        self.input_text = ""
+        self.input_last_text = ""
+        self.input_dest.font_name = 'SimSun'
         self.go = Button(text='GO!', font_size=32, size_hint_x=None, width=120, size_hint_y=None, height=60)
         self.go.bind(on_press=self.change_pic)
 
@@ -75,6 +80,10 @@ class MainScreen(BoxLayout):
     def change_pic(self, *args):
         self.ax.clear()
         self.ax.axis('off')
+        self.input_text = self.input_dest.text
+        if self.input_text == "" or self.input_text == self.input_last_text:
+            return
+        self.input_last_text = self.input_text
         NAVI_GaoDe.get_url()
         NAVI_GaoDe.make_navi_data()
         x = show_route.all_x
