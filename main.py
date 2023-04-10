@@ -14,7 +14,9 @@ from kivy.core.text import LabelBase
 import GPSAPI
 import show_route
 NAVI_GaoDe = GPSAPI.Navi_auto()
+from plyer import gps
 
+sys_android_windows = 0
 Window.size = (360, 640)
 LabelBase.register(name='ArialUni', fn_regular='SimSun.ttf')
 
@@ -22,6 +24,12 @@ LabelBase.register(name='ArialUni', fn_regular='SimSun.ttf')
 class MainScreen(BoxLayout):
     def __init__(self, **kwargs):
         super(MainScreen, self).__init__(**kwargs)
+
+        # gps_on_android
+        if sys_android_windows:
+            self.gps = gps
+            self.gps.configure(on_location=self.on_location)
+            self.gps.start()
 
         # layouts
         box_layout = BoxLayout(orientation='vertical')
@@ -90,6 +98,10 @@ class MainScreen(BoxLayout):
         y = show_route.all_y
         self.ax.plot(x, y)
         self.fig.canvas.draw()
+
+    # gps_on_android
+    def on_location(self, **kwargs):
+        print(str(kwargs['lat']), str(kwargs['lon']))
 
 
 class SecondScreen(Screen):
