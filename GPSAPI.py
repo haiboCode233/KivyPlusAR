@@ -17,7 +17,7 @@ class Navi_auto:
         pos_dict = {}
         for poi in data_dict["pois"]:
             pos_dict[poi['name']] = poi['location']
-        print(pos_dict)
+        return pos_dict
 
     def get_coordinate(self, start_longitude, start_latitude, desti_longitude, desti_latitude):
         self.start_coordinate[self.longitude] = start_longitude

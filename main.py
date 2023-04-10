@@ -10,15 +10,25 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.label import Label
 from kivy.core.window import Window
 from kivy.uix.textinput import TextInput
+from kivy.uix.popup import Popup
 from kivy.core.text import LabelBase
+from kivy.uix.spinner import Spinner
 import GPSAPI
 import show_route
+
 NAVI_GaoDe = GPSAPI.Navi_auto()
 from plyer import gps
 
 sys_android_windows = 0
 Window.size = (360, 640)
-LabelBase.register(name='ArialUni', fn_regular='SimSun.ttf')
+LabelBase.register(name='SimSun', fn_regular='SimSun.ttf')
+
+
+class MySpinner(Spinner):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.values = ['Option 1', 'Option 2', 'Option 3']
+        self.text = self.values[0]
 
 
 class MainScreen(BoxLayout):
@@ -30,6 +40,54 @@ class MainScreen(BoxLayout):
             self.gps = gps
             self.gps.configure(on_location=self.on_location)
             self.gps.start()
+        # popup warning
+        self.warning_empty = Label(text='Empty Input!')
+        self.warning_popup = Popup(title='Warning', content=self.warning_empty, auto_dismiss=True, size_hint=(0.5, 0.2))
+
+        # popup setting
+
+        self.dict_all_places = {}
+        self.popup_slct_boxlayout = BoxLayout(orientation='vertical', size_hint_x=None, width=280, size_hint_y=None,
+                                              height=360)
+        self.popup_mode_boxlayout = BoxLayout(orientation='horizontal', size_hint_y=None, height=100)
+        self.popup_exit_boxlayout = BoxLayout(orientation='horizontal', size_hint_y=None, height=120)
+
+        self.popup_exit_boxlayout.cols = 2
+        self.button_GO = Button(text='GO!', size_hint=(0.3, None), height=60)
+        self.button_cancel = Button(text='Cancel', size_hint=(0.3, None), height=60)
+        self.popup_exit_boxlayout.add_widget(self.button_GO)
+        self.popup_exit_boxlayout.add_widget(self.button_cancel)
+
+        self.popup_mode_boxlayout.cols = 3
+        self.button_walk = ToggleButton(text='Walk', size_hint=(0.3, None), height=60)
+        self.button_bike = ToggleButton(text='Bike', size_hint=(0.3, None), height=60)
+        self.button_drive = ToggleButton(text='Drive', size_hint=(0.3, None), height=60)
+        self.popup_mode_boxlayout.add_widget(self.button_walk)
+        self.popup_mode_boxlayout.add_widget(self.button_bike)
+        self.popup_mode_boxlayout.add_widget(self.button_drive)
+
+        self.popup_slct_boxlayout.cols = 1
+        self.spinner = MySpinner(size_hint=(1, None), height=40)
+        self.spinner.font_name = 'SimSun'
+
+        self.tips = Label(text='select your destination')
+        self.tips_2 = Label(text='select your way')
+        self.place_holder = Widget(size_hint=(0.95, None), height=80)
+        self.place_holder_2 = Widget(size_hint=(0.95, None), height=20)
+        self.place_holder_3 = Widget(size_hint=(0.95, None), height=20)
+
+        self.popup_slct_boxlayout.add_widget(self.place_holder)
+        self.popup_slct_boxlayout.add_widget(self.tips)
+        self.popup_slct_boxlayout.add_widget(self.place_holder_2)
+        self.popup_slct_boxlayout.add_widget(self.spinner)
+        self.popup_slct_boxlayout.add_widget(self.place_holder_3)
+        self.popup_slct_boxlayout.add_widget(self.tips_2)
+        self.popup_slct_boxlayout.add_widget(self.popup_mode_boxlayout)
+        self.popup_slct_boxlayout.add_widget(self.popup_exit_boxlayout)
+
+        self.setting_popup = Popup(title='Setting', content=self.popup_slct_boxlayout, auto_dismiss=False,
+                                   size_hint_x=None,
+                                   width=300, size_hint_y=None, height=380)
 
         # layouts
         box_layout = BoxLayout(orientation='vertical')
@@ -59,7 +117,7 @@ class MainScreen(BoxLayout):
                                     size_hint_y=None, height=60)
         self.input_text = ""
         self.input_last_text = ""
-        self.input_dest.font_name = 'SimSun'
+        self.input_dest.font_name = './SimSun.ttf'
         self.go = Button(text='Search', font_size=32, size_hint_x=None, width=120, size_hint_y=None, height=60)
         self.go.bind(on_press=self.choose_desti_way)
 
@@ -86,8 +144,13 @@ class MainScreen(BoxLayout):
         self.fig.canvas.draw()
 
     def choose_desti_way(self, *args):
-        dictA = NAVI_GaoDe.get_destination(destination=self.input_dest.text)
-        print(dictA)
+        if self.input_dest.text:
+            self.dict_all_places = NAVI_GaoDe.get_destination(destination=self.input_dest.text)
+            self.spinner.values = self.dict_all_places.keys()
+            self.spinner.text = self.spinner.values[0]
+            self.setting_popup.open()
+        else:
+            self.warning_popup.open()
 
     def make_route(self, *args):
         self.ax.clear()
