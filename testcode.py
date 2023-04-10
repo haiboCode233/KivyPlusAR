@@ -16,6 +16,10 @@ class MapWidget(BoxLayout):
         self.fig = Figure()
         self.ax = self.fig.add_subplot()
 
+        self.key = '1b1779b2176bc8d85a93f9aef22b8a53'
+        self.dest = '南京信息工程大学附属中学'
+        self.region = '320111'
+
     def draw_route(self, x, y):
 
         self.ax.plot(x, y)
@@ -28,26 +32,12 @@ class MapWidget(BoxLayout):
         if self.collide_point(*touch.pos):
             # 获取路径规划结果
             points = []
-            start = "116.481028,39.989643"
-            end = "116.434446,39.90816"
-            url = f"https://restapi.amap.com/v3/direction/walking?key=1b1779b2176bc8d85a93f9aef22b8a53&origin=116.481028,39.989643&destination=116.434446,39.90816"
-            data = requests.get(url).json()
 
-            # 解析路径数据
-            paths = data["route"]["paths"]
-            polyline = paths[0]['steps']  # list
-            for i in range(0, len(polyline)):
-                print(type(polyline[i]['polyline'].split(';')))
-                points.extend(polyline[i]['polyline'].split(';'))
-            show_route.gps_lon_lat.clear()
-            for i in range(0, len(points)):
-                x, y = map(float, points[i].split(","))
-                show_route.gps_lon_lat.append(y)
-                show_route.gps_lon_lat.append(x)
-            show_route.create_pic_data()
-            self.draw_route(show_route.all_x, show_route.all_y)
-            return True
-        return super(MapWidget, self).on_touch_down(touch)
+            url = f"https://restapi.amap.com/v5/place/text?key=1b1779b2176bc8d85a93f9aef22b8a53&keywords=南京信息工程大学附属中学&region=320111&city_limit=true&show_fields=children"
+            data_dict = requests.get(url).json()
+            for poi in data_dict["pois"]:
+                print(poi['name']+"  "+poi['location'])
+
 
 
 class MapApp(App):

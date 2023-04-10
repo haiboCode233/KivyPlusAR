@@ -60,8 +60,8 @@ class MainScreen(BoxLayout):
         self.input_text = ""
         self.input_last_text = ""
         self.input_dest.font_name = 'SimSun'
-        self.go = Button(text='GO!', font_size=32, size_hint_x=None, width=120, size_hint_y=None, height=60)
-        self.go.bind(on_press=self.change_pic)
+        self.go = Button(text='Search', font_size=32, size_hint_x=None, width=120, size_hint_y=None, height=60)
+        self.go.bind(on_press=self.choose_desti_way)
 
         # layouts
         swpage_layout.add_widget(self.device_button)
@@ -85,14 +85,18 @@ class MainScreen(BoxLayout):
         self.ax.text(0.5, 0.5, 'Go and Explore!', ha='center', va='center')
         self.fig.canvas.draw()
 
-    def change_pic(self, *args):
+    def choose_desti_way(self, *args):
+        dictA = NAVI_GaoDe.get_destination(destination=self.input_dest.text)
+        print(dictA)
+
+    def make_route(self, *args):
         self.ax.clear()
         self.ax.axis('off')
         self.input_text = self.input_dest.text
         if self.input_text == "" or self.input_text == self.input_last_text:
             return
         self.input_last_text = self.input_text
-        NAVI_GaoDe.get_url()
+        NAVI_GaoDe.get_walking_url()
         NAVI_GaoDe.make_navi_data()
         x = show_route.all_x
         y = show_route.all_y
