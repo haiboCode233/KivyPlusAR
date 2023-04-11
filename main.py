@@ -59,6 +59,7 @@ class MainScreen(BoxLayout):
         self.popup_exit_boxlayout.add_widget(self.button_cancel)
         # 倒数第二层的出行方式按钮
         self.popup_mode_boxlayout.cols = 3
+        self.out_mode = 0  # 0 walk,1 bike,2 drive
         self.button_walk = ToggleButton(text='Walk', size_hint=(0.3, None), height=60)
         self.button_bike = ToggleButton(text='Bike', size_hint=(0.3, None), height=60)
         self.button_drive = ToggleButton(text='Drive', size_hint=(0.3, None), height=60)
@@ -144,14 +145,17 @@ class MainScreen(BoxLayout):
 
     # 弹窗界面函数
     def walk_route(self, *args):
+        self.out_mode = 0
         self.button_bike.state = 'normal'
         self.button_drive.state = 'normal'
 
     def bike_route(self, *args):
+        self.out_mode = 1
         self.button_walk.state = 'normal'
         self.button_drive.state = 'normal'
 
     def drive_route(self, *args):
+        self.out_mode = 2
         self.button_bike.state = 'normal'
         self.button_walk.state = 'normal'
 
@@ -160,12 +164,14 @@ class MainScreen(BoxLayout):
         NAVI_GaoDe.get_coordinate(start_latitude=32.20593, start_longitude=118.711273,
                                   desti_latitude=float(self.dict_all_places[self.spinner.text].split(',')[1]),
                                   desti_longitude=float(self.dict_all_places[self.spinner.text].split(',')[0]))
-        if self.button_walk.state != 'normal':
+        if self.out_mode == 0:
             NAVI_GaoDe.get_walking_url()
-        elif self.button_bike.state != 'normal':
+        elif self.out_mode == 1:
             NAVI_GaoDe.get_bike_url()
-        else:
+        elif self.out_mode == 2:
             NAVI_GaoDe.get_drive_url()
+        else:
+            NAVI_GaoDe.get_walking_url()
         NAVI_GaoDe.make_navi_data()
         x = show_route.all_x
         y = show_route.all_y
