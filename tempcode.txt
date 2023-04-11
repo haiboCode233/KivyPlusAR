@@ -1,6 +1,2 @@
-我使用如下代码试图更新画布，但是为什么运行后原来的图像只是挤到了画布的下方而不是清除呢
-self.fig.canvas.clear_widgets()
-x = [1, 2, 3]
-y = [4, 5, 6]
-self.ax.plot(x, y)
-self.fig.canvas.draw()
+self.fig, self.ax = plt.subplots()
+canvas = FigureCanvasKivyAgg(self.fig)

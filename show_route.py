@@ -129,6 +129,8 @@ def DD2DFConvert(dDegree):
 
 def create_pic_data():
     global gps_lon_lat, all_x, all_y
+    all_x = []
+    all_y = []
     for i in range(0, int(len(gps_lon_lat) / 2)):
         all_x.append(LBToXY(DegreeConvert(gps_read_point(0)[0]), DegreeConvert(gps_read_point(0)[1]),
                             DegreeConvert(gps_read_point(i)[0]), DegreeConvert(gps_read_point(i)[1]))[0])

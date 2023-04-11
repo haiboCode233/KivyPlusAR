@@ -45,19 +45,19 @@ class MainScreen(BoxLayout):
         self.warning_popup = Popup(title='Warning', content=self.warning_empty, auto_dismiss=True, size_hint=(0.5, 0.2))
 
         # popup setting
-
+        # 创建layouts以及存储搜索结果的字典
         self.dict_all_places = {}
         self.popup_slct_boxlayout = BoxLayout(orientation='vertical', size_hint_x=None, width=280, size_hint_y=None,
                                               height=360)
         self.popup_mode_boxlayout = BoxLayout(orientation='horizontal', size_hint_y=None, height=100)
         self.popup_exit_boxlayout = BoxLayout(orientation='horizontal', size_hint_y=None, height=120)
-
+        # 最后一层的确认和取消按钮
         self.popup_exit_boxlayout.cols = 2
         self.button_GO = Button(text='GO!', size_hint=(0.3, None), height=60)
         self.button_cancel = Button(text='Cancel', size_hint=(0.3, None), height=60)
         self.popup_exit_boxlayout.add_widget(self.button_GO)
         self.popup_exit_boxlayout.add_widget(self.button_cancel)
-
+        # 倒数第二层的出行方式按钮
         self.popup_mode_boxlayout.cols = 3
         self.button_walk = ToggleButton(text='Walk', size_hint=(0.3, None), height=60)
         self.button_bike = ToggleButton(text='Bike', size_hint=(0.3, None), height=60)
@@ -65,17 +65,17 @@ class MainScreen(BoxLayout):
         self.popup_mode_boxlayout.add_widget(self.button_walk)
         self.popup_mode_boxlayout.add_widget(self.button_bike)
         self.popup_mode_boxlayout.add_widget(self.button_drive)
-
+        # 第一层的下拉框
         self.popup_slct_boxlayout.cols = 1
         self.spinner = MySpinner(size_hint=(1, None), height=40)
         self.spinner.font_name = 'SimSun'
-
+        # 占位控件和标签
         self.tips = Label(text='select your destination')
         self.tips_2 = Label(text='select your way')
         self.place_holder = Widget(size_hint=(0.95, None), height=80)
         self.place_holder_2 = Widget(size_hint=(0.95, None), height=20)
         self.place_holder_3 = Widget(size_hint=(0.95, None), height=20)
-
+        # 布局
         self.popup_slct_boxlayout.add_widget(self.place_holder)
         self.popup_slct_boxlayout.add_widget(self.tips)
         self.popup_slct_boxlayout.add_widget(self.place_holder_2)
@@ -84,13 +84,17 @@ class MainScreen(BoxLayout):
         self.popup_slct_boxlayout.add_widget(self.tips_2)
         self.popup_slct_boxlayout.add_widget(self.popup_mode_boxlayout)
         self.popup_slct_boxlayout.add_widget(self.popup_exit_boxlayout)
-
+        # 生成popup
         self.setting_popup = Popup(title='Setting', content=self.popup_slct_boxlayout, auto_dismiss=False,
                                    size_hint_x=None,
                                    width=300, size_hint_y=None, height=380)
+        # popup中各个按钮的函数绑定
+        # 最后一层的确认和取消按钮
+        self.button_GO.bind(on_release=self.make_route)
+        self.button_cancel.bind(on_release=self.setting_popup.dismiss)
 
         # layouts
-        box_layout = BoxLayout(orientation='vertical')
+        self.box_layout = BoxLayout(orientation='vertical')
         toolbar_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=60)
         toolbar_layout.cols = 2
         swpage_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=60)
@@ -128,15 +132,28 @@ class MainScreen(BoxLayout):
         toolbar_layout.add_widget(self.input_dest)
         toolbar_layout.add_widget(self.go)
 
-        box_layout.add_widget(canvas)
-        box_layout.add_widget(swpage_layout)
-        box_layout.add_widget(toolbar_layout)
+        self.box_layout.add_widget(canvas)
+        self.box_layout.add_widget(swpage_layout)
+        self.box_layout.add_widget(toolbar_layout)
 
-        self.add_widget(box_layout)
+        self.add_widget(self.box_layout)
 
-    def go_to_second_screen(self, instance):
-        myapp.screen_manager.current = 'second_screen'
+    # 弹窗界面函数
+    def make_route(self, *args):
+        self.setting_popup.dismiss()
+        NAVI_GaoDe.get_coordinate(start_latitude=32.20593, start_longitude=118.711273,
+                                  desti_latitude=float(self.dict_all_places[self.spinner.text].split(',')[1]),
+                                  desti_longitude=float(self.dict_all_places[self.spinner.text].split(',')[0]))
+        NAVI_GaoDe.get_walking_url()
+        NAVI_GaoDe.make_navi_data()
+        x = show_route.all_x
+        y = show_route.all_y
+        self.ax.clear()
+        self.ax.axis('off')
+        self.ax.plot(x, y)
+        self.fig.canvas.draw()
 
+    # 主界面函数
     def reset_navi(self, *args):
         self.ax.clear()
         self.ax.axis('off')
@@ -145,30 +162,24 @@ class MainScreen(BoxLayout):
 
     def choose_desti_way(self, *args):
         if self.input_dest.text:
-            self.dict_all_places = NAVI_GaoDe.get_destination(destination=self.input_dest.text)
-            self.spinner.values = self.dict_all_places.keys()
-            self.spinner.text = self.spinner.values[0]
-            self.setting_popup.open()
+            try:
+                self.dict_all_places = NAVI_GaoDe.get_destination(destination=self.input_dest.text)
+                self.spinner.values = self.dict_all_places.keys()
+                self.spinner.text = self.spinner.values[0]
+                self.setting_popup.open()
+            except Exception as e:
+                print(e)
+                self.warning_popup.open()
         else:
             self.warning_popup.open()
-
-    def make_route(self, *args):
-        self.ax.clear()
-        self.ax.axis('off')
-        self.input_text = self.input_dest.text
-        if self.input_text == "" or self.input_text == self.input_last_text:
-            return
-        self.input_last_text = self.input_text
-        NAVI_GaoDe.get_walking_url()
-        NAVI_GaoDe.make_navi_data()
-        x = show_route.all_x
-        y = show_route.all_y
-        self.ax.plot(x, y)
-        self.fig.canvas.draw()
 
     # gps_on_android
     def on_location(self, **kwargs):
         print(str(kwargs['lat']), str(kwargs['lon']))
+
+    # 切换页面
+    def go_to_second_screen(self, instance):
+        myapp.screen_manager.current = 'second_screen'
 
 
 class SecondScreen(Screen):
