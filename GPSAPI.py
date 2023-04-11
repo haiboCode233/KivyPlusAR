@@ -29,19 +29,16 @@ class Navi_auto:
         start_pos = str(self.start_coordinate).strip('[').strip(']').replace(' ', '')
         desti_pos = str(self.desti_coordinate).strip('[').strip(']').replace(' ', '')
         self.res_url = f"https://restapi.amap.com/v3/direction/walking?key={self.key}&origin={start_pos}&destination={desti_pos}"
-        print(self.res_url)
 
     def get_bike_url(self):
         start_pos = str(self.start_coordinate).strip('[').strip(']').replace(' ', '')
         desti_pos = str(self.desti_coordinate).strip('[').strip(']').replace(' ', '')
         self.res_url = f"https://restapi.amap.com/v4/direction/bicycling?key={self.key}&origin={start_pos}&destination={desti_pos}"
-        print(self.res_url)
 
     def get_drive_url(self):
         start_pos = str(self.start_coordinate).strip('[').strip(']').replace(' ', '')
         desti_pos = str(self.desti_coordinate).strip('[').strip(']').replace(' ', '')
         self.res_url = f"https://restapi.amap.com/v3/direction/driving?origin={start_pos}&destination={desti_pos}&key={self.key}"
-        print(self.res_url)
 
     def make_navi_data(self):
         points = []

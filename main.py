@@ -144,17 +144,14 @@ class MainScreen(BoxLayout):
 
     # 弹窗界面函数
     def walk_route(self, *args):
-        NAVI_GaoDe.get_walking_url()
         self.button_bike.state = 'normal'
         self.button_drive.state = 'normal'
 
     def bike_route(self, *args):
-        NAVI_GaoDe.get_bike_url()
         self.button_walk.state = 'normal'
         self.button_drive.state = 'normal'
 
     def drive_route(self, *args):
-        NAVI_GaoDe.get_drive_url()
         self.button_bike.state = 'normal'
         self.button_walk.state = 'normal'
 
@@ -163,7 +160,12 @@ class MainScreen(BoxLayout):
         NAVI_GaoDe.get_coordinate(start_latitude=32.20593, start_longitude=118.711273,
                                   desti_latitude=float(self.dict_all_places[self.spinner.text].split(',')[1]),
                                   desti_longitude=float(self.dict_all_places[self.spinner.text].split(',')[0]))
-
+        if self.button_walk.state != 'normal':
+            NAVI_GaoDe.get_walking_url()
+        elif self.button_bike.state != 'normal':
+            NAVI_GaoDe.get_bike_url()
+        else:
+            NAVI_GaoDe.get_drive_url()
         NAVI_GaoDe.make_navi_data()
         x = show_route.all_x
         y = show_route.all_y
