@@ -89,9 +89,13 @@ class MainScreen(BoxLayout):
                                    size_hint_x=None,
                                    width=300, size_hint_y=None, height=380)
         # popup中各个按钮的函数绑定
-        # 最后一层的确认和取消按钮
+        # 第三层的确认和取消按钮
         self.button_GO.bind(on_release=self.make_route)
         self.button_cancel.bind(on_release=self.setting_popup.dismiss)
+        # 第二层的出行方式
+        self.button_walk.bind(on_release=self.walk_route)
+        self.button_bike.bind(on_release=self.bike_route)
+        self.button_drive.bind(on_release=self.drive_route)
 
         # layouts
         self.box_layout = BoxLayout(orientation='vertical')
@@ -139,12 +143,27 @@ class MainScreen(BoxLayout):
         self.add_widget(self.box_layout)
 
     # 弹窗界面函数
+    def walk_route(self, *args):
+        NAVI_GaoDe.get_walking_url()
+        self.button_bike.state = 'normal'
+        self.button_drive.state = 'normal'
+
+    def bike_route(self, *args):
+        NAVI_GaoDe.get_bike_url()
+        self.button_walk.state = 'normal'
+        self.button_drive.state = 'normal'
+
+    def drive_route(self, *args):
+        NAVI_GaoDe.get_drive_url()
+        self.button_bike.state = 'normal'
+        self.button_walk.state = 'normal'
+
     def make_route(self, *args):
         self.setting_popup.dismiss()
         NAVI_GaoDe.get_coordinate(start_latitude=32.20593, start_longitude=118.711273,
                                   desti_latitude=float(self.dict_all_places[self.spinner.text].split(',')[1]),
                                   desti_longitude=float(self.dict_all_places[self.spinner.text].split(',')[0]))
-        NAVI_GaoDe.get_walking_url()
+
         NAVI_GaoDe.make_navi_data()
         x = show_route.all_x
         y = show_route.all_y
