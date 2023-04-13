@@ -19,7 +19,7 @@ import show_route
 NAVI_GaoDe = GPSAPI.Navi_auto()
 from plyer import gps
 
-sys_android_windows = 0
+sys_android_windows = 1
 Window.size = (360, 640)
 LabelBase.register(name='SimSun', fn_regular='SimSun.ttf')
 
@@ -227,9 +227,11 @@ class SecondScreen(Screen):
 
 
 class MyApp(App):
-    def build(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.screen_manager = ScreenManager()
 
+    def build(self):
         main_screen = MainScreen()
         screen = Screen(name='main_screen')
         screen.add_widget(main_screen)
