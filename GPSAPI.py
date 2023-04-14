@@ -1,5 +1,6 @@
 import requests
 import show_route
+import serial
 
 
 class Navi_auto:
@@ -47,7 +48,6 @@ class Navi_auto:
             paths = data["route"]["paths"]
             polyline = paths[0]['steps']  # list
         except Exception as e:
-            print("bike mode.\r\n"+str(e))
             paths = data["data"]["paths"]
             polyline = paths[0]['steps']  # list
         for i in range(0, len(polyline)):
@@ -60,6 +60,46 @@ class Navi_auto:
         show_route.create_pic_data()
 
 
+class device:
+    def __init__(self):
+        self.location = []
+        self.baud_rate = 115200
+        self.port = ''
+        self.interface = ''
+        self.GPS_Data = ''
+        self.create_interface()
+
+    def create_interface(self):
+        for i in range(0, 100):
+            self.port = 'COM'
+            self.port = self.port + str(i)
+            try:
+                self.interface = serial.Serial(self.port, self.baud_rate, timeout=1)
+                self.GPS_Data = self.interface.readline().decode('utf-8')
+                if len(self.GPS_Data) >= 8:
+                    print(self.GPS_Data)
+                    print("Successfully find the device!")
+                    print("Port:{}".format(self.port))
+                    break
+                else:
+                    print(self.GPS_Data)
+                    print("Connected to {},but it is not the device".format(self.port))
+            except Exception as e:
+                print("{} is not the device".format(self.port))
+                print("error msg:{}".format(e))
+
+    def get_location(self):
+        while True:
+            self.GPS_Data = self.interface.readline().decode('utf-8')
+            if self.GPS_Data.startswith('$GNRMC'):
+                fields = self.GPS_Data.split(',')
+                self.location = []
+                self.location.append(show_route.DegreeConvert(float(fields[3])))
+                self.location.append(show_route.DegreeConvert(float(fields[5])))
+                print(self.location)
+                return
+
+
 if __name__ == '__main__':
-    a = Navi_auto()
-    a.get_destination("南京信息工程大学附属中学")
+    a = device()
+    a.get_location()

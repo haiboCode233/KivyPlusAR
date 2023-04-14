@@ -19,7 +19,7 @@ import show_route
 NAVI_GaoDe = GPSAPI.Navi_auto()
 from plyer import gps
 
-sys_android_windows = 1
+sys_android_windows = 0
 Window.size = (360, 640)
 LabelBase.register(name='SimSun', fn_regular='SimSun.ttf')
 
@@ -40,6 +40,8 @@ class MainScreen(BoxLayout):
             self.gps = gps
             self.gps.configure(on_location=self.on_location)
             self.gps.start()
+        else:
+            pass
         # popup warning
         self.warning_empty = Label(text='Empty Input!')
         self.warning_popup = Popup(title='Warning', content=self.warning_empty, auto_dismiss=True, size_hint=(0.5, 0.2))

@@ -1,6 +1,0 @@
-https://dataxujing.github.io/create_apps_in_kivy/chapter1/
-
-key:
-	2aa942945e9bf26b87552d3a19b59f31
-keyname:
-    201913360016NAV

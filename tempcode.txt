@@ -1,2 +1,0 @@
-self.fig, self.ax = plt.subplots()
-canvas = FigureCanvasKivyAgg(self.fig)
