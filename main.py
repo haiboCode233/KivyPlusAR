@@ -17,6 +17,8 @@ import GPSAPI
 import show_route
 
 NAVI_GaoDe = GPSAPI.Navi_auto()
+GPS_Device = GPSAPI.device()
+
 from plyer import gps
 
 sys_android_windows = 0
@@ -163,7 +165,9 @@ class MainScreen(BoxLayout):
 
     def make_route(self, *args):
         self.setting_popup.dismiss()
-        NAVI_GaoDe.get_coordinate(start_latitude=32.20593, start_longitude=118.711273,
+        now_location = GPS_Device.get_location()
+        NAVI_GaoDe.get_coordinate(start_latitude=now_location[0],
+                                  start_longitude=now_location[1],
                                   desti_latitude=float(self.dict_all_places[self.spinner.text].split(',')[1]),
                                   desti_longitude=float(self.dict_all_places[self.spinner.text].split(',')[0]))
         if self.out_mode == 0:
