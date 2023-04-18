@@ -13,17 +13,20 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.popup import Popup
 from kivy.core.text import LabelBase
 from kivy.uix.spinner import Spinner
+from kivy.clock import Clock
 import GPSAPI
 import show_route
+import threading
+import time
+import queue
+
 
 NAVI_GaoDe = GPSAPI.Navi_auto()
 GPS_Device = GPSAPI.device()
-
-from plyer import gps
-
 sys_android_windows = 0
 Window.size = (360, 640)
 LabelBase.register(name='SimSun', fn_regular='SimSun.ttf')
+update_pos_stop = 0
 
 
 class MySpinner(Spinner):
@@ -37,13 +40,6 @@ class MainScreen(BoxLayout):
     def __init__(self, **kwargs):
         super(MainScreen, self).__init__(**kwargs)
 
-        # gps_on_android
-        if sys_android_windows:
-            self.gps = gps
-            self.gps.configure(on_location=self.on_location)
-            self.gps.start()
-        else:
-            pass
         # popup warning
         self.warning_empty = Label(text='Empty Input!')
         self.warning_popup = Popup(title='Warning', content=self.warning_empty, auto_dismiss=True, size_hint=(0.5, 0.2))
@@ -110,11 +106,18 @@ class MainScreen(BoxLayout):
         swpage_layout.cols = 2
 
         # widgets for box_layout
+        # matplotlib
         self.fig, self.ax = plt.subplots()
         x = np.linspace(0, 2 * np.pi, 100)
         y = np.sin(x)
         self.ax.plot(x, y)
-        self.ax.axis('off')
+        # self.ax.axis('off')
+        self.user_position_plot = ''
+        self.event_queue = queue.Queue()
+        self.update_pos = threading.Thread(target=self.update_user_position)
+        self.update_pos.start()  # 发射事件
+        self.update_flg = 0
+        self.update_thread_flg = 1
         canvas = FigureCanvasKivyAgg(self.fig)
 
         # widgets for swpage_layout
@@ -166,10 +169,13 @@ class MainScreen(BoxLayout):
     def make_route(self, *args):
         self.setting_popup.dismiss()
         now_location = GPS_Device.get_location()
-        NAVI_GaoDe.get_coordinate(start_latitude=now_location[0],
-                                  start_longitude=now_location[1],
-                                  desti_latitude=float(self.dict_all_places[self.spinner.text].split(',')[1]),
-                                  desti_longitude=float(self.dict_all_places[self.spinner.text].split(',')[0]))
+        # 118.71125,32.205848
+        NAVI_GaoDe.get_coordinate(  # start_latitude=now_location[0],
+            # start_longitude=now_location[1],
+            start_latitude=32.205848,
+            start_longitude=118.71125,
+            desti_latitude=float(self.dict_all_places[self.spinner.text].split(',')[1]),
+            desti_longitude=float(self.dict_all_places[self.spinner.text].split(',')[0]))
         if self.out_mode == 0:
             NAVI_GaoDe.get_walking_url()
         elif self.out_mode == 1:
@@ -182,14 +188,51 @@ class MainScreen(BoxLayout):
         x = show_route.all_x
         y = show_route.all_y
         self.ax.clear()
-        self.ax.axis('off')
+        # self.ax.axis('off')
+        now_location = show_route.convert_now_location(now_location)
+        print("now location: ", now_location)
         self.ax.plot(x, y)
+        self.user_position_plot, = self.ax.plot(show_route.DegreeConvert(show_route.gps_read_point(0)[0]),
+                                                show_route.DegreeConvert(show_route.gps_read_point(0)[1]), 'ro')
+        self.update_flg = 1
         self.fig.canvas.draw()
+        if self.update_thread_flg:
+            Clock.schedule_interval(self.update_plot, 1)
+            self.update_thread_flg = 0
+
+    # 发射事件（发射用户位置）
+    def update_user_position(self):
+        global update_pos_stop
+        test_mode = 1
+        while True:
+            time.sleep(1)
+            if self.update_flg:
+                if test_mode:
+                    self.event_queue.put([2, 2])
+                else:
+                    now_location = GPS_Device.get_location()
+                    x = now_location[0]
+                    y = now_location[1]
+                    self.event_queue.put([x, y])
+            else:
+                pass
+            if update_pos_stop == 1:
+                break
+
+    def update_plot(self, *args):
+        event = self.event_queue.get()
+        if len(event) == 2:
+            self.user_position_plot.set_data(2, 2)  # 更新红点的坐标
+            self.fig.canvas.draw()  # 重新绘制图像
+            print("pass")
+        else:
+            pass
+        pass
 
     # 主界面函数
     def reset_navi(self, *args):
         self.ax.clear()
-        self.ax.axis('off')
+        # self.ax.axis('off')
         self.ax.text(0.5, 0.5, 'Go and Explore!', ha='center', va='center')
         self.fig.canvas.draw()
 
@@ -205,10 +248,6 @@ class MainScreen(BoxLayout):
                 self.warning_popup.open()
         else:
             self.warning_popup.open()
-
-    # gps_on_android
-    def on_location(self, **kwargs):
-        print(str(kwargs['lat']), str(kwargs['lon']))
 
     # 切换页面
     def go_to_second_screen(self, instance):
@@ -236,11 +275,12 @@ class MyApp(App):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.screen_manager = ScreenManager()
+        self.main_screen = MainScreen()
 
     def build(self):
-        main_screen = MainScreen()
+
         screen = Screen(name='main_screen')
-        screen.add_widget(main_screen)
+        screen.add_widget(self.main_screen)
         self.screen_manager.add_widget(screen)
 
         second_screen = SecondScreen()
@@ -249,6 +289,12 @@ class MyApp(App):
         self.screen_manager.add_widget(screen)
 
         return self.screen_manager
+
+    def on_stop(self):
+        global update_pos_stop
+        # Stop the thread when the application stops
+        update_pos_stop = 1
+        pass
 
 
 if __name__ == '__main__':

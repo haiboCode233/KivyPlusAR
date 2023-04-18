@@ -1,48 +1,37 @@
-import numpy as np
 import matplotlib.pyplot as plt
-from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
-from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
+
+# 模拟导航路径数据
+path = [(0, 0), (1, 1), (2, 3), (3, 4), (4, 2)]
+
+# 初始化绘图
+fig, ax = plt.subplots()
+ax.set_xlim(-1, 5)
+ax.set_ylim(-1, 5)
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_title('Navigation Path')
+
+# 绘制导航路径
+x = [point[0] for point in path]
+y = [point[1] for point in path]
+ax.plot(x, y, 'b-')
+
+# 初始化用户位置
+user_position = (0, 0)
+user_position_plot, = ax.plot(user_position[0], user_position[1], 'ro')  # 用户位置的红点
 
 
-class MyWidget(BoxLayout):
-    def __init__(self, **kwargs):
-        super(MyWidget, self).__init__(**kwargs)
-
-        # 创建 Figure 对象和 FigureCanvasKivyAgg 对象
-        self.fig = plt.figure()
-        canvas = FigureCanvasKivyAgg(self.fig)
-        self.button = Button(text="plot", size_hint=(0.3, 0.3))
-        self.button.bind(on_release=self.update_data)
-        self.add_widget(self.button)
-        self.add_widget(canvas)
-        # 调用 Matplotlib 绘图方法绘制初始图形
-        self.plot_data()
-
-    def plot_data(self):
-        # 清除 Figure 对象的现有图形
-        self.fig.clf()
-
-        # 生成随机数据
-        x = np.random.rand(50)
-        y = np.random.rand(50)
-
-        # 绘制散点图
-        plt.scatter(x, y)
-
-        # 调用 FigureCanvasKivyAgg 对象的 draw() 方法将图形渲染到界面上
-        self.canvas.draw()
-
-    def update_data(self):
-        # 调用 Matplotlib 绘图方法更新图形
-        self.plot_data()
+# 更新用户位置
+def update_user_position(new_pos):
+    user_position_plot.set_data(new_pos[0], new_pos[1])  # 更新红点的坐标
+    plt.draw()  # 重新绘制图像
 
 
-class MyApp(App):
-    def build(self):
-        return MyWidget()
+# 模拟用户位置的更新
+import time
 
-
-if __name__ == '__main__':
-    MyApp().run()
+for i in range(1, len(path)):
+    new_position = path[i]
+    update_user_position(new_position)
+    plt.pause(1)  # 暂停一秒
+    time.sleep(1)  # 等待一秒

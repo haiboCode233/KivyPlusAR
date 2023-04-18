@@ -96,7 +96,6 @@ class device:
                 self.location = []
                 self.location.append(show_route.DegreeConvert(float(fields[3])))
                 self.location.append(show_route.DegreeConvert(float(fields[5])))
-                # print(self.location)
                 return self.location
 
 

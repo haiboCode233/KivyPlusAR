@@ -138,3 +138,7 @@ def create_pic_data():
                             DegreeConvert(gps_read_point(i)[0]), DegreeConvert(gps_read_point(i)[1]))[1])
 
 
+def convert_now_location(ori_xy):
+    xy = LBToXY(DegreeConvert(gps_read_point(0)[0]), DegreeConvert(gps_read_point(0)[1]),
+                DegreeConvert(ori_xy[0]), DegreeConvert(ori_xy[1]))
+    return xy
