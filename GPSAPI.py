@@ -76,7 +76,7 @@ class device:
             try:
                 self.interface = serial.Serial(self.port, self.baud_rate, timeout=1)
                 self.GPS_Data = self.interface.readline().decode('utf-8')
-                if len(self.GPS_Data) >= 8:
+                if len(self.GPS_Data) >= 8 and self.GPS_Data[0] != '2':
                     print(self.GPS_Data)
                     print("Successfully find the device!")
                     print("Port:{}".format(self.port))
