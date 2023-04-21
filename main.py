@@ -188,6 +188,7 @@ class MainScreen(BoxLayout):
         NAVI_GaoDe.make_navi_data()
         x = show_route.all_x
         y = show_route.all_y
+        My_kit.send_route(x_data=x, y_data=y)  # 发送路径
         self.ax.clear()
         # self.ax.axis('off')
         now_location = show_route.convert_now_location(now_location)
@@ -225,7 +226,7 @@ class MainScreen(BoxLayout):
         if len(event) == 2:
             self.user_position_plot.set_data(2, 2)  # 更新红点的坐标
             self.fig.canvas.draw()  # 重新绘制图像
-            print("pass")
+            # print("pass")
         else:
             pass
         pass
