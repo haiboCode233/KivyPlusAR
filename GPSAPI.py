@@ -73,6 +73,8 @@ class device:
         for i in range(0, 100):
             self.port = 'COM'
             self.port = self.port + str(i)
+            if i == 7 or i == 9:
+                continue
             try:
                 self.interface = serial.Serial(self.port, self.baud_rate, timeout=1)
                 self.GPS_Data = self.interface.readline().decode('utf-8')
