@@ -12,7 +12,7 @@ class hardware:
         self.sta = 0
 
     def create_interface(self):
-        self.port = 'COM7'
+        self.port = 'COM3'
         self.baud_rate = 9600
         while True:
             try:
@@ -32,9 +32,12 @@ class hardware:
     def query_power(self):
         print("start query...")
         self.interface.write(b'p')
-        self.Data = self.interface.read(20).decode()
-        print(self.Data)
-        return self.Data
+        try:
+            self.Data = self.interface.read(20).decode()
+            print(self.Data)
+            return self.Data
+        except Exception as e:
+            return False
 
     def data_select(self, data):
         if self.sta != 1 or len(data) <= 100:
@@ -54,6 +57,13 @@ class hardware:
             data[i] = round(data[i], 1)
         return data
 
+    def send_location(self, x_data, y_data):
+        if self.sta == 1:
+            self.interface.write(str(x_data).encode())
+            self.interface.write(b',')
+            self.interface.write(str(y_data).encode())
+            self.interface.write(b'x')
+
     def send_route(self, x_data, y_data):
         x_data = self.data_select(x_data)
         y_data = self.data_select(y_data)
@@ -62,7 +72,7 @@ class hardware:
         print(len(x_data))
         print(len(y_data))
         if self.sta == 1:
-            self.interface.write(b's')  # 开始发送横坐标
+            self.interface.write(b's')  # 开始发送坐标
             for i in range(0, len(x_data)):
                 self.interface.write(str(x_data[i]).encode())
                 self.interface.write(b',')
@@ -71,6 +81,15 @@ class hardware:
             self.interface.write(b'e')  # 发送结束标志
         else:
             print("not connected to the device!")
+
+    def send_cmd_L(self):
+        self.interface.write(b'l')  # 开始发送横坐标
+
+    def send_cmd_M(self):
+        self.interface.write(b'm')  # 开始发送横坐标
+
+    def send_cmd_R(self):
+        self.interface.write(b'r')  # 开始发送横坐标
 
 
 if __name__ == '__main__':

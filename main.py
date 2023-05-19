@@ -28,6 +28,7 @@ sys_android_windows = 0
 Window.size = (360, 640)
 LabelBase.register(name='SimSun', fn_regular='SimSun.ttf')
 update_pos_stop = 0
+test_mode = 1
 
 
 class MySpinner(Spinner):
@@ -42,7 +43,7 @@ class MainScreen(BoxLayout):
         super(MainScreen, self).__init__(**kwargs)
 
         # popup warning
-        self.warning_empty = Label(text='Empty Input!')
+        self.warning_empty = Label(text='Invalid Input!')
         self.warning_popup = Popup(title='Warning', content=self.warning_empty, auto_dismiss=True, size_hint=(0.5, 0.2))
 
         # popup setting
@@ -205,7 +206,7 @@ class MainScreen(BoxLayout):
     # 发射事件（发射用户位置）
     def update_user_position(self):
         global update_pos_stop
-        test_mode = 1
+        global test_mode
         while True:
             time.sleep(1)
             if self.update_flg:
@@ -222,9 +223,17 @@ class MainScreen(BoxLayout):
                 break
 
     def update_plot(self, *args):
+        global test_mode
         event = self.event_queue.get()
         if len(event) == 2:
-            self.user_position_plot.set_data(2, 2)  # 更新红点的坐标
+            if test_mode:
+                self.user_position_plot.set_data(2, 2)  # 更新红点的坐标
+                # 发送坐标到单片机
+                My_kit.send_location(2, 2)
+            else:
+                self.user_position_plot.set_data(event[0], event[1])  # 更新红点的坐标
+                # 发送坐标到单片机
+                My_kit.send_location(event[0], event[1])
             self.fig.canvas.draw()  # 重新绘制图像
             # print("pass")
         else:
@@ -262,15 +271,27 @@ class SecondScreen(Screen):
 
         self.box_layout = BoxLayout(orientation='vertical', size_hint=(1, 1), padding=[50, 0, 50, 0])
         # widgets
-        self.button_connect = ToggleButton(text='Connect Device', size_hint=(1, None), height=60)
+        self.button_connect = ToggleButton(text='Connect Device', font_size=20, size_hint=(1, None), height=60)
         self.button_connect.bind(on_release=self.on_connect_device)
         self.connect_sta_lb = Label(text="Unconnected", size_hint=(1, None), height=60)
 
-        self.button_powerquery = Button(text='Update Power', font_size=20, size_hint=(1, None), height=60)
+        self.button_powerquery = Button(text='Check Connection', font_size=20, size_hint=(1, None), height=60)
         self.button_powerquery.bind(on_release=self.on_query_power)
-        self.power_sta_lb = Label(text="70%", size_hint=(1, None), height=60)
+        self.power_sta_lb = Label(text="unverified", size_hint=(1, None), height=60)
 
-        self.place_holder = Widget(size_hint=(1, None), height=280)
+        self.servo_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=60)
+        self.button_left = Button(text='<--', font_size=20, size_hint=(1, None), height=60)
+        self.button_stop = Button(text='STOP', font_size=20, size_hint=(1, None), height=60)
+        self.button_right = Button(text='-->', font_size=20, size_hint=(1, None), height=60)
+        self.button_left.bind(on_release=self.send_left)
+        self.button_stop.bind(on_release=self.send_stop)
+        self.button_right.bind(on_release=self.send_right)
+        self.servo_layout.add_widget(self.button_left)
+        self.servo_layout.add_widget(self.button_stop)
+        self.servo_layout.add_widget(self.button_right)
+        # self.button_left.bind(on_release=self.)
+
+        self.place_holder = Widget(size_hint=(1, None), height=220)
 
         self.backbutton = Button(text='Go back to Main Screen', font_size=20, size_hint=(1, None), height=60)
         self.backbutton.bind(on_press=self.go_to_main_screen)
@@ -279,6 +300,7 @@ class SecondScreen(Screen):
         self.box_layout.add_widget(self.connect_sta_lb)
         self.box_layout.add_widget(self.button_powerquery)
         self.box_layout.add_widget(self.power_sta_lb)
+        self.box_layout.add_widget(self.servo_layout)
         self.box_layout.add_widget(self.place_holder)
         self.box_layout.add_widget(self.backbutton)
 
@@ -294,11 +316,23 @@ class SecondScreen(Screen):
             self.connect_sta_lb.text = "Unconnected"
 
     def on_query_power(self, *args):
-        power_value = My_kit.query_power()
-        self.power_sta_lb.text = power_value
+        if My_kit.query_power():
+            self.power_sta_lb.text = "Device Online"
+        else:
+            self.power_sta_lb.text = "Device Offline"
 
     def go_to_main_screen(self, instance):
         myapp.screen_manager.current = 'main_screen'
+
+    def send_left(self, *args):
+        My_kit.send_cmd_L()
+
+    def send_stop(self, *args):
+        My_kit.send_cmd_M()
+
+    def send_right(self, *args):
+        My_kit.send_cmd_R()
+
 
 
 class MyApp(App):
